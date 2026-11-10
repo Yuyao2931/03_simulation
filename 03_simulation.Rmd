@@ -1,0 +1,109 @@
+---
+title: "03_simulation"
+author: "Yuyao"
+date: "2026-11-10"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+
+```{r}
+library(tidyverse)
+
+source("sim_mean_sd.R")
+
+set.seed(1236)
+```
+
+```{r}
+output = vector("list", length = 1000)
+
+for (i in 1:1000) {
+  
+  output[[i]] 
+}
+```
+
+let's do this using tibbles and map instead!
+
+```{r}
+sim_results_df =
+  tibble(
+    samp_size = rep(30, 1000)
+  ) |> 
+  mutate(
+    est_df = map(samp_size, sim_mean_sd)
+  ) |> 
+  unnest(est_df)
+
+```
+
+look at results
+
+```{r}
+sim_results_df |> 
+  ggplot(aes(x = mean)) + 
+  geom_density()
+```
+
+## change `n`
+
+```{r}
+sim_results_df =
+  expand_grid(
+    samp_size = c(30, 60, 120, 240),
+    iter = 1:1000
+  ) |> 
+  mutate(
+    est_df = map(samp_size, sim_mean_sd)
+  ) |> 
+  unnest(est_df)
+  
+```
+
+```{r}
+sim_results_df |> 
+  mutate(
+    samp_size = str_c("n = ", samp_size),
+    samp_size = fct_inorder(samp_size)
+  ) |> 
+  ggplot(aes(x = samp_size, y = mean)) +
+  geom_violin()
+
+```
+
+look at the numbers
+
+```{r}
+sim_results_df |> 
+  mutate(
+    samp_size = str_c("n = ", samp_size),
+    samp_size = fct_inorder(samp_size)
+  ) |> 
+  group_by(samp_size) |> 
+  summarise(
+    emp_m = mean(mean),
+    emp_se = sd(mean)
+  )
+```
+
+
